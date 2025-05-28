@@ -17,7 +17,7 @@ function savelattice!(L::Lattice, f::Union{HDF5.File,HDF5.Group}; calculateactio
 
     # delete current entries in the file if they exist
     for param in fieldnames(Lattice)
-        if startswith(String(field), "_") # skip neighbours, checkerboards, etc
+        if startswith(String(param), "_") # skip neighbours, checkerboards, etc
             continue
         end
         if haskey(g, String(param))

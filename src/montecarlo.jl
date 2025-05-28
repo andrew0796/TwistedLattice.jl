@@ -390,7 +390,7 @@ function minimizeyangmills!(L::Lattice, params::MCParameters, schedule::Function
 
         if progressBar && (length(action)-1)%progressBarFrequency == 0
             if params.heatBathRate > 0 
-                @printf "\r\033[K\r%i iterations, action/(8π^2/%i) = %.14f, temperature = %.3e, metropolis acceptance rate = %.4f%%, log(convergence) = (%c)%.4e" (length(action)-1) SIL.N action[end] T (acceptRate_heatBath[end]*100) charactersign(action[end]-action[end-1]) log10(abs(action[end]-action[end-1]))
+                @printf "\r\033[K\r%i iterations, action/(8π^2/%i) = %.14f, temperature = %.3e, metropolis acceptance rate = %.4f%%, log(convergence) = (%c)%.4e" (length(action)-1) L.N action[end] T (acceptRate_heatBath[end]*100) charactersign(action[end]-action[end-1]) log10(abs(action[end]-action[end-1]))
             else
                 printprogressbar(printOutput, L, action)
             end

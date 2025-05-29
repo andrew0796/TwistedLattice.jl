@@ -231,3 +231,91 @@ function enforceunitarity!(ndx::Int, mu::Int, L::Lattice)
     phase = exp(-im*angle(det(L[ndx,mu]))/L.N)
     L[ndx,mu] = phase*L[ndx,mu]
 end
+
+function shiftlattice!(L::Lattice, distance::Int64, direction::Int64)
+    """ Shift lattice a certain distance along a particular direction by incrementally moving the twists and shifting the lattice sites """
+    if direction < 1 || direction > 4
+        error("direction must be between 1 and 4, given $direction")
+    end
+
+    if distance == 0
+        return
+    end
+
+    indices = [1,2,3,4]
+    filter!(e->e!=direction, indices)
+
+    new_sites = copy(L.sites)
+    new_action_density = copy(L.actionDensity)
+
+    for n=1:abs(distance)
+        for j in indices
+            if mod(L.twists[direction, j], L.N) != 0
+                otherIndices = filter(e->e!=j, indices)
+                for i1=1:L.size[otherIndices[1]], i2=1:L.size[otherIndices[2]]
+                    if distance > 0
+                        L[(I[1:5,direction] + I[1:5,j] + i1*I[1:5,otherIndices[1]]+ i2*I[1:5,otherIndices[2]] + j*I[1:5,5])...] *= exp(2im*pi*L.twists[direction,j]/L.N)
+                    else
+                        L[(2*I[1:5,direction] + I[1:5,j] + i1*I[1:5,otherIndices[1]]+ i2*I[1:5,otherIndices[2]] + j*I[1:5,5])...] *= exp(-2im*pi*L.twists[direction,j]/L.N)
+                    end
+                end
+            end
+        end
+
+        for ndx = 1:prod(L.size), mu=1:4
+            if distance > 0
+                new_sites[ndx, mu, :,:] = L[L._neighbours_neg[ndx, direction], mu]
+                new_action_density[ndx] = L.actionDensity[L._neighbours_neg[ndx, direction]]
+            else
+                new_sites[ndx, mu, :,:] = L[L._neighbours_pos[ndx, direction], mu]
+                new_action_density[ndx] = L.actionDensity[L._neighbours_pos[ndx, direction]]
+            end
+        end
+        L.sites = copy(new_sites)
+        L.actionDensity = copy(new_action_density)
+    end
+end
+
+function shiftlattice!(L::Lattice, distance::Vector{Int64})
+    if length(distance) != 4
+        error("distance should be a 4-dimensional vector, given $distance")
+    end
+    for i=1:4
+        if distance[i] != 0
+            shiftlattice!(L, distance[i], i)
+        end
+    end
+end
+
+function centerlattice!(L::Lattice)
+    """ Center lattice around the maxima of the action density in each direction, calculate action density if necessary """
+    maxima = argmax(L.actionDensity)
+
+    shiftlattice!(L, [fld(L.size[i],2)-maxima[i] for i=1:4])
+end
+
+function settwist!(L::Lattice, mu::Int, nu::Int, twist::Int)
+    """ Set the mu-nu component of the twists of L to be twist (mod N), automatically setting the nu-mu component so L.twists is antisymmetric """
+    if mu == nu
+        @warn "mu and nu are the same component, not setting twist"
+        return
+    end
+    if mu < 1 || mu > 4 || nu < 1 || nu > 4
+        error("mu and nu must be between 1 and 4, given $mu and $nu")
+    end
+    L.twists[mu,nu] = mod(twist, L.N)
+    L.twists[nu,mu] = -L.twists[mu,nu]
+    nothing
+end
+
+function settwists!(L::Lattice, twists::Matrix{Int})
+    """ Set the twists of the lattice L. twists must be a 4x4 antisymmetric (up to mod L.N) matrix """
+    if size(twists) != (4,4)
+        error("twists must be a 4x4 matrix, given $(size(twists))")
+    end
+    if all(mod.(twists+transpose(twists), L.N) .!= 0)
+        error("twists must be an antisymmetric matrix, up to mod(L.N)")
+    end
+    L.twists = twists
+    nothing
+end

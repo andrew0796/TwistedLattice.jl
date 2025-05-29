@@ -85,6 +85,30 @@ function Lattice(f::Union{HDF5.File,HDF5.Group})
     return L
 end
 
+function Lattice(filename::AbstractString; use_snapshot::Bool=false)
+    f = h5open(filename, "r")
+    if use_snapshot
+        if !haskey(f, "snapshots")
+            close(f)
+            error("No shapshots group found in $filename")
+        end
+        g = f["snapshots"]
+        n = 1
+        while haskey(g, "snapshot_$n")
+            n += 1
+        end
+        if n == 1
+            close(f)
+            error("No snapshot found!")
+        end
+        L = Lattice(g["snapshot_$(n-1)"])
+    else
+        L = Lattice(f)
+    end
+    close(f)
+    return L
+end
+
 function getgroup!(fid::HDF5.File, groupname::AbstractString)::HDF5.Group
     if ! haskey(fid, groupname)
         create_group(fid, groupname)

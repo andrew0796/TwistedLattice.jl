@@ -282,8 +282,6 @@ end
 
 function improvedparallelcoolingsweep!(L::Lattice, method::Symbol, ϵ::Float64)
     for mu=1:4
-        #indices = otherindices(mu)
-
         for i=1:length(L._ranges_improved[mu])
             Threads.@threads for ndx in L._ranges_improved[mu][i]
                 if method == :polar

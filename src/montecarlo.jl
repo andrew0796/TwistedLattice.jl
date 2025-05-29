@@ -222,14 +222,6 @@ function coolingupdatesite_SU2subgroups!(ndx::Int, mu::Int, L::Lattice, ϵ::Floa
     enforceunitarity!(ndx,mu, L)
 end
 
-#= function coolingupdatesite_polar!(x::Vector{Int64}, L::Lattice, ϵ::Float64)
-    staple = calculateimprovedstaple(x, L, ϵ)
-    F = svd(staple)
-    L[x...] = F.V*adjoint(F.U)
-
-    enforceunitarity!(x, L)
-end
- =#
 function coolingupdatesite_polar!(ndx::Int, mu::Int, L::Lattice, ϵ::Float64)
     staple = calculateimprovedstaple(ndx, mu, L, ϵ)
     F = svd(staple)

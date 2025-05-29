@@ -9,7 +9,7 @@ function createdatafile(filename::AbstractString)::HDF5.File
     return f
 end
 
-function createdatafile!(f::HDF5.Files)
+function createdatafile!(f::HDF5.File)
     keys = ["lattice", "metadata", "analysis", "snapshots"]
     for key in keys
         if !haskey(f, key)

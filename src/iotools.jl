@@ -9,6 +9,15 @@ function createdatafile(filename::AbstractString)::HDF5.File
     return f
 end
 
+function createdatafile!(f::HDF5.Files)
+    keys = ["lattice", "metadata", "analysis", "snapshots"]
+    for key in keys
+        if !haskey(f, key)
+            create_group(f, key)
+        end
+    end
+end
+
 function savelattice!(L::Lattice, f::Union{HDF5.File,HDF5.Group}; calculateaction::Bool=true)
     if ! haskey(f, "lattice")
         create_group(f, "lattice")

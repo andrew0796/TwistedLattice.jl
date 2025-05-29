@@ -16,6 +16,6 @@ include("montecarlo.jl")
 export MCParameters, readMCparameters, minimizeyangmills!, defaultstoppingcondition
 
 include("iotools.jl")
-export createdatafile, savelattice, savelattice!, savesnapshot!, dumpMCparams!, dumpmetadata!, Lattice
+export createdatafile, createdatafile!, savelattice, savelattice!, savesnapshot!, dumpMCparams!, dumpmetadata!, Lattice
 
 end

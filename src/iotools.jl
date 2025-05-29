@@ -1,7 +1,7 @@
 using HDF5
 
-function createdatafile(filename::AbstractString; directory::AbstractString="../data/")::HDF5.File
-    f = h5open(*(directory,filename), "w", swmr=true)
+function createdatafile(filename::AbstractString)::HDF5.File
+    f = h5open(filename, "w", swmr=true)
     create_group(f, "lattice")
     create_group(f, "metadata")
     create_group(f, "analysis")

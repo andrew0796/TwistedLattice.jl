@@ -100,3 +100,18 @@ function calculateimprovedstaple(ndx::Int, mu::Int, L::Lattice, ϵ::Float64)::Ma
         return lmul!((4-ϵ)/3, calculatestaple(ndx, mu, L)) .+ lmul!((ϵ-1)/48,calculatedoublestaple(ndx, mu, L))
     end
 end
+
+function actionprofile(L::Lattice, direction::Int)
+    S = zeros(Float64, L.size[direction])
+
+    indices = filter(e->e!=direction, [1,2,3,4])
+    for i = 1:L.size[direction]
+        s = 0.0
+        for i1=1:L.size[indices[1]], i2=1:L.size[indices[2]], i3=1:L.size[indices[3]]
+            x = i*I[1:4,direction] + i1*I[1:4,indices[1]] + i2*I[1:4,indices[2]] + i3*I[1:4,indices[3]]
+            s += L.actionDensity[cartesiantosingleindex(x, L)]
+        end
+        S[i] = s
+    end
+    return S
+end

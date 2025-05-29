@@ -8,7 +8,7 @@ export centerbackground, doubleplaquettecenterbackground, randominitializelattic
 export singleindextocartesian, cartesiantosingleindex, neighbour_pos_index, neighbour_neg_index
 
 include("yangmillstools.jl")
-export wilsonaction, wilsonaction!, wilsonactiondensity, setactiondensity!, electricmagneticwilsonaction, improvedactiondensity, improvedaction!, electricmagneticimprovedaction, setimprovedactiondensity!, calculatestaple, calculateimprovedstaple, calculatestapleadjoint
+export wilsonaction, wilsonaction!, wilsonactiondensity, setactiondensity!, electricmagneticwilsonaction, improvedactiondensity, improvedaction!, electricmagneticimprovedaction, setimprovedactiondensity!, calculatestaple, calculateimprovedstaple, calculatestapleadjoint, actionprofile
 
 include("progressbar.jl")
 

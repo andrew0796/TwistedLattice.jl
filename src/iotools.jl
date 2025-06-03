@@ -36,7 +36,7 @@ function savelattice!(L::Lattice, f::Union{HDF5.File,HDF5.Group}; calculateactio
     
     g["sites"] = L.sites
     g["N"] = L.N
-    g["size"] = [L.size...]
+    g["dims"] = [L.dims...]
     
     if calculateaction
         setactiondensity!(L)

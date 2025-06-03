@@ -6,12 +6,12 @@ function wilsonactiondensity(SL::Lattice, ndx::Int, mu::Int, nu::Int)::Float64
 end
 
 function wilsonaction(SL::Lattice)::Float64
-    return 2*Folds.sum(wilsonactiondensity(SL, ndx,mu,nu) for ndx in 1:prod(SL.size), mu in 1:4 for nu in mu+1:4)
+    return 2*Folds.sum(wilsonactiondensity(SL, ndx,mu,nu) for ndx in 1:prod(SL.dims), mu in 1:4 for nu in mu+1:4)
 end
 
 function electricmagneticwilsonaction(L::Lattice)::NTuple{2, Float64}
-    SE = 2*Folds.sum(wilsonactiondensity(L, ndx,4,i) for ndx in 1:prod(L.size), i in 1:3)
-    SB = 2*Folds.sum(wilsonactiondensity(L, ndx,i,j) for ndx in 1:prod(L.size), i in 1:2 for j in i+1:3)
+    SE = 2*Folds.sum(wilsonactiondensity(L, ndx,4,i) for ndx in 1:prod(L.dims), i in 1:3)
+    SB = 2*Folds.sum(wilsonactiondensity(L, ndx,i,j) for ndx in 1:prod(L.dims), i in 1:2 for j in i+1:3)
     return (SE, SB)
 end
 
@@ -26,7 +26,7 @@ end
 
 
 function setactiondensity!(L::Lattice)
-    for ndx = 1:prod(L.size)
+    for ndx = 1:prod(L.dims)
         L.actionDensity[ndx] = 0.0
         for mu=1:3, nu=mu+1:4
             L.actionDensity[ndx] += 2*wilsonactiondensity(L, ndx, mu,nu)
@@ -44,8 +44,8 @@ function improvedactiondensity(L::Lattice, ϵ::Float64, ndx::Int, mu::Int, nu::I
 end
 
 function electricmagneticimprovedaction(L::Lattice, ϵ::Float64)::NTuple{2, Float64}
-    SE = 2*Folds.sum(improvedactiondensity(L,ϵ, ndx,4,i) for ndx in 1:prod(L.size), i in 1:3)
-    SB = 2*Folds.sum(improvedactiondensity(L,ϵ, ndx,i,j) for ndx in 1:prod(L.size), i in 1:2 for j in i+1:3)
+    SE = 2*Folds.sum(improvedactiondensity(L,ϵ, ndx,4,i) for ndx in 1:prod(L.dims), i in 1:3)
+    SB = 2*Folds.sum(improvedactiondensity(L,ϵ, ndx,i,j) for ndx in 1:prod(L.dims), i in 1:2 for j in i+1:3)
     return (SE, SB)
 end
 
@@ -58,7 +58,7 @@ function improvedaction!(L::Lattice, ϵ::Float64)::Float64
 end
 
 function setimprovedactiondensity!(L::Lattice, ϵ::Float64)
-    for ndx = 1:prod(L.size)
+    for ndx = 1:prod(L.dims)
         L.actionDensity[ndx] = 0.0
         for mu=1:3, nu=mu+1:4
             L.actionDensity[ndx] += 2*improvedactiondensity(L,ϵ, ndx, mu,nu)
@@ -102,12 +102,12 @@ function calculateimprovedstaple(ndx::Int, mu::Int, L::Lattice, ϵ::Float64)::Ma
 end
 
 function actionprofile(L::Lattice, direction::Int)
-    S = zeros(Float64, L.size[direction])
+    S = zeros(Float64, L.dims[direction])
 
     indices = filter(e->e!=direction, [1,2,3,4])
-    for i = 1:L.size[direction]
+    for i = 1:L.dims[direction]
         s = 0.0
-        for i1=1:L.size[indices[1]], i2=1:L.size[indices[2]], i3=1:L.size[indices[3]]
+        for i1=1:L.dims[indices[1]], i2=1:L.dims[indices[2]], i3=1:L.dims[indices[3]]
             x = i*I[1:4,direction] + i1*I[1:4,indices[1]] + i2*I[1:4,indices[2]] + i3*I[1:4,indices[3]]
             s += L.actionDensity[cartesiantosingleindex(x, L)]
         end

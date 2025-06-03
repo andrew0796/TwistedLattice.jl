@@ -4,7 +4,7 @@ mutable struct Lattice
     """ Four dimensional Lattice, using lexicographic indices. This is quite a bit faster than the Cartesian indexing, though less intuitive """
     N::Int64
     sites::Array{ComplexF64, 4} # (N1 x N2 x N3 x N4) x 4 x NxN
-    size::NTuple{4, Int64}
+    dims::NTuple{4, Int64}
     twists::Matrix{Int64} # 4x4 antisymmetric matrix of twists
     
     action::Float64
@@ -28,8 +28,8 @@ function singleindextocartesian(i::Int, L::Lattice)::Vector{Int}
     ndx = zeros(Int, 4)
     i_temp = i
     for mu = 4:-1:1
-        ndx[mu] = div(i_temp-1, prod(L.size[1:mu-1])) + 1
-        i_temp = i_temp - (ndx[mu]-1)*prod(L.size[1:mu-1])
+        ndx[mu] = div(i_temp-1, prod(L.dims[1:mu-1])) + 1
+        i_temp = i_temp - (ndx[mu]-1)*prod(L.dims[1:mu-1])
     end
     return ndx
 end
@@ -37,7 +37,7 @@ end
 function cartesiantosingleindex(x::Vector{Int}, L::Lattice)::Int
     ndx = 1
     for mu=1:4
-        ndx += (x[mu]-1)*prod(L.size[1:mu-1])
+        ndx += (x[mu]-1)*prod(L.dims[1:mu-1])
     end
     return ndx
 end
@@ -53,7 +53,7 @@ end
 function cartesiantosingleindex(L::Lattice, x::Vararg{Int, 5})::Int
     ndx = 1
     for mu=1:4
-        ndx += (x[mu]-1)*prod(L.size[1:mu-1])
+        ndx += (x[mu]-1)*prod(L.dims[1:mu-1])
     end
     return ndx
 end
@@ -66,32 +66,32 @@ end
 
 
 function setneighbours!(SIL::Lattice)
-    SIL._neighbours_neg = Array{Int, 2}(undef, prod(SIL.size), 4)
-    SIL._neighbours_pos = Array{Int, 2}(undef, prod(SIL.size), 4)
-    for i1=1:SIL.size[1], i2=1:SIL.size[2], i3=1:SIL.size[3], i4=1:SIL.size[4], mu=1:4
+    SIL._neighbours_neg = Array{Int, 2}(undef, prod(SIL.dims), 4)
+    SIL._neighbours_pos = Array{Int, 2}(undef, prod(SIL.dims), 4)
+    for i1=1:SIL.dims[1], i2=1:SIL.dims[2], i3=1:SIL.dims[3], i4=1:SIL.dims[4], mu=1:4
         site = [i1,i2,i3,i4]
-        ndx = cartesiantosingleindex(site, SIL.size)
-        if site[mu] == SIL.size[mu]
-            SIL._neighbours_pos[ndx, mu] = ndx - (SIL.size[mu]-1)*prod(SIL.size[1:mu-1])
+        ndx = cartesiantosingleindex(site, SIL.dims)
+        if site[mu] == SIL.dims[mu]
+            SIL._neighbours_pos[ndx, mu] = ndx - (SIL.dims[mu]-1)*prod(SIL.dims[1:mu-1])
         else
-            SIL._neighbours_pos[ndx, mu] = ndx + prod(SIL.size[1:mu-1])
+            SIL._neighbours_pos[ndx, mu] = ndx + prod(SIL.dims[1:mu-1])
         end
         if site[mu] == 1
-            SIL._neighbours_neg[ndx, mu] = ndx + (SIL.size[mu]-1)*prod(SIL.size[1:mu-1])
+            SIL._neighbours_neg[ndx, mu] = ndx + (SIL.dims[mu]-1)*prod(SIL.dims[1:mu-1])
         else
-            SIL._neighbours_neg[ndx, mu] = ndx - prod(SIL.size[1:mu-1])
+            SIL._neighbours_neg[ndx, mu] = ndx - prod(SIL.dims[1:mu-1])
         end
     end
 end
 
 function setcheckerboards!(SIL::Lattice)
-    SIL._checkerboard_red = Array{Int}(undef, div(prod(SIL.size), 2))
-    SIL._checkerboard_blk = Array{Int}(undef, div(prod(SIL.size), 2))
+    SIL._checkerboard_red = Array{Int}(undef, div(prod(SIL.dims), 2))
+    SIL._checkerboard_blk = Array{Int}(undef, div(prod(SIL.dims), 2))
     ndx_red = 1
     ndx_blk = 1
-    for i1=1:SIL.size[1], i2=1:SIL.size[2], i3=1:SIL.size[3], i4=1:SIL.size[4]
+    for i1=1:SIL.dims[1], i2=1:SIL.dims[2], i3=1:SIL.dims[3], i4=1:SIL.dims[4]
         site = [i1,i2,i3,i4]
-        ndx = cartesiantosingleindex(site, SIL.size)
+        ndx = cartesiantosingleindex(site, SIL.dims)
         if iseven(sum(site))
             SIL._checkerboard_red[ndx_red] = ndx
             ndx_red += 1
@@ -100,7 +100,7 @@ function setcheckerboards!(SIL::Lattice)
             ndx_blk += 1
         end
     end
-    if ndx_red != div(prod(SIL.size), 2) + 1 || ndx_blk != div(prod(SIL.size), 2) + 1
+    if ndx_red != div(prod(SIL.dims), 2) + 1 || ndx_blk != div(prod(SIL.dims), 2) + 1
         error("something went wrong with constructing checkerboards! got to $ndx_red and $ndx_blk for red and black")
     end
     sort!(SIL._checkerboard_red)
@@ -129,14 +129,14 @@ function setimprovedranges!(L::Lattice)
         indices = [1,2,3,4]
         filter!(e->e!=mu, indices)
 
-        ranges = createranges_improvedparallel(L.size, indices)
+        ranges = createranges_improvedparallel(L.dims, indices)
         L._ranges_improved[mu] = Vector{Int}[]
         
         for a=0:3, b1=0:1, b2=0:1, b3=0:1
             for i=1:2, j=1:2, k=1:2
                 range = []
                 for i1=ranges[1][i], i2=ranges[2][j], i3=ranges[3][k]
-                    for i4=cld(-2*(i1+i2+i3)-a,4):fld(L.size[mu]-2*(i1+i2+i3)-a-1,4)
+                    for i4=cld(-2*(i1+i2+i3)-a,4):fld(L.dims[mu]-2*(i1+i2+i3)-a-1,4)
                         x = (2*i1+b1+1)*I[1:4,indices[1]] + (2*i2+b2+1)*I[1:4,indices[2]] + (2*i3+b3+1)*I[1:4,indices[3]] + (4*i4 + 2*(i1+i2+i3) + a + 1)*I[1:4,mu]
                         ndx = cartesiantosingleindex(x, L)
                         push!(range, ndx)
@@ -162,7 +162,7 @@ function Lattice(N::Int64, dimensions::NTuple{4, Int64}, twists::Matrix{Int64}; 
     L = Lattice()
     N < 2 && error("N must be at least 2")
     L.N = N
-    L.size = dimensions
+    L.dims = dimensions
     L.sites = Array{ComplexF64, 4}(undef, prod(dimensions), 4, N,N)
 
     L.action = 0.0
@@ -214,7 +214,7 @@ function doubleplaquettecenterbackground(L::Lattice, ndx::Int, mu::Int, nu::Int)
         return 0.0+0.0im
     end
     x = singleindextocartesian(ndx, L) 
-    if (x[mu] == 1 || x[mu] == L.size[mu]) && (x[nu] == 1 || x[nu] == L.size[nu])
+    if (x[mu] == 1 || x[mu] == L.dims[mu]) && (x[nu] == 1 || x[nu] == L.dims[nu])
         return exp(-2im*pi*L.twists[mu,nu]/L.N)
     else
         return 1.0+0.0im
@@ -252,7 +252,7 @@ function shiftlattice!(L::Lattice, distance::Int64, direction::Int64)
         for j in indices
             if mod(L.twists[direction, j], L.N) != 0
                 otherIndices = filter(e->e!=j, indices)
-                for i1=1:L.size[otherIndices[1]], i2=1:L.size[otherIndices[2]]
+                for i1=1:L.dims[otherIndices[1]], i2=1:L.dims[otherIndices[2]]
                     if distance > 0
                         L[(I[1:5,direction] + I[1:5,j] + i1*I[1:5,otherIndices[1]]+ i2*I[1:5,otherIndices[2]] + j*I[1:5,5])...] *= exp(2im*pi*L.twists[direction,j]/L.N)
                     else
@@ -262,7 +262,7 @@ function shiftlattice!(L::Lattice, distance::Int64, direction::Int64)
             end
         end
 
-        for ndx = 1:prod(L.size), mu=1:4
+        for ndx = 1:prod(L.dims), mu=1:4
             if distance > 0
                 new_sites[ndx, mu, :,:] = L[L._neighbours_neg[ndx, direction], mu]
                 new_action_density[ndx] = L.actionDensity[L._neighbours_neg[ndx, direction]]
@@ -291,7 +291,7 @@ function centerlattice!(L::Lattice)
     """ Center lattice around the maxima of the action density in each direction, calculate action density if necessary """
     maxima = argmax(L.actionDensity)
 
-    shiftlattice!(L, [fld(L.size[i],2)-maxima[i] for i=1:4])
+    shiftlattice!(L, [fld(L.dims[i],2)-maxima[i] for i=1:4])
 end
 
 function settwist!(L::Lattice, mu::Int, nu::Int, twist::Int)

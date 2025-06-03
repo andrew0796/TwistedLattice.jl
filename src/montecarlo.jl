@@ -166,8 +166,8 @@ end
 
 function heatbathsweep!(L::Lattice, temperature::Float64)::Int64
     nAccepted = 0
-    for i=1:prod(L.size), mu=1:4
-        ndx = rand(1:prod(L.size))
+    for i=1:prod(L.dims), mu=1:4
+        ndx = rand(1:prod(L.dims))
         nu = rand(1:4)
         nAccepted += heatbathupdatesite!(ndx, nu, L, temperature)
     end
@@ -181,7 +181,7 @@ function overrelaxationupdatesite!(ndx::Int, mu::Int, L::Lattice)
 end
 
 function overrelaxationsweep!(L::Lattice)
-    for i=1:prod(L.size), mu=1:4
+    for i=1:prod(L.dims), mu=1:4
         overrelaxationupdatesite!(i, mu, L)
     end
 end
@@ -231,7 +231,7 @@ function coolingupdatesite_polar!(ndx::Int, mu::Int, L::Lattice, ϵ::Float64)
 end
 
 function coolingsweep!(L::Lattice, method::Symbol, ϵ::Float64)
-    for i=1:prod(L.size), mu=1:4
+    for i=1:prod(L.dims), mu=1:4
         if method == :polar
             coolingupdatesite_polar!(i, mu, L, ϵ)
         else
@@ -335,7 +335,7 @@ function minimizeyangmills!(L::Lattice, params::MCParameters, schedule::Function
     T = params.initialTemperature
     temps = [T]
 
-    nSites = prod(L.size)*4
+    nSites = prod(L.dims)*4
 
     bestAction = Inf
     bestLattice = similar(L.sites)

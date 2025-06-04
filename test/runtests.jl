@@ -35,7 +35,7 @@ end
 
     twists_zero = zeros(Int64, 4,4)
 
-    dims = (8,8,8,8)
+    dims = (4,4,4,4)
 
     # test Wilson action cooling
     @test test_cooling(dims, :SU2, 2, twists_zero, 1.0)

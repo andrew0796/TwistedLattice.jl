@@ -45,7 +45,7 @@ for seed = 1:1
     L = Lattice(N, dims, twists_14_23)
 
     output = "SU$(N)_$(dims[1])_$(dims[2])_$(dims[3])_$(dims[4])_twists_14_23_seed_$seed.h5"
-    f = createdatafile(output; directory=directory)
+    f = createdatafile(output)
 
     # thermalize at the initial temperature
     @time results = minimizeyangmills!(L, params_thermalization, thermalizeSchedule, stoppingConditionInitial)

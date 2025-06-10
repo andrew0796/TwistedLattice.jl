@@ -46,10 +46,10 @@ for seed = 1:1
     L = Lattice(N, dims, twists_14_23)
 
     output = "SU$(N)_$(dims[1])_$(dims[2])_$(dims[3])_$(dims[4])_twists_14_23_seed_$seed.h5"
-    f = createdatafile(output; directory=directory)
+    f = createdatafile(output)
 
     # minimize using polar cooling method until convergence is < 10⁻⁴
-    @time results = minimizeyangmills!(L, initialParams, defaultSchedule, stoppingConditionInitial; snapshotFrequency=50, snapshotFile=f)
+    @time results = minimizeyangmills!(L, initialParams, defaultSchedule, stoppingConditionInitial; snapshotFrequency=50, snapshotFile=f, overwriteSnapshots=true)
 
     savelattice!(L, f)
     dumpmetadata!(f, results)
@@ -62,7 +62,7 @@ for seed = 1:1
         # while it's stuck, reset twists to zero, try doing some iterations, and then try minimizing again with original twists
         L.twists = mod_twists
         
-        @time results = minimizeyangmills!(L, mod_params, defaultSchedule, stoppingConditionMod; snapshotFrequency=50, snapshotFile=f)
+        @time results = minimizeyangmills!(L, mod_params, defaultSchedule, stoppingConditionMod; snapshotFrequency=50, snapshotFile=f, overwriteSnapshots=true)
 
         savelattice!(L, f)
         dumpmetadata!(f, results)
@@ -70,7 +70,7 @@ for seed = 1:1
 
         # switch twists back to the original ones
         L.twists = twists_14_23
-        @time results = minimizeyangmills!(L, params, defaultSchedule, stoppingConditionInitial; snapshotFrequency=50, snapshotFile=f)
+        @time results = minimizeyangmills!(L, params, defaultSchedule, stoppingConditionInitial; snapshotFrequency=50, snapshotFile=f, overwriteSnapshots=true)
 
         savelattice!(L, f)
         dumpmetadata!(f, results)
@@ -78,7 +78,7 @@ for seed = 1:1
     end
 
     # finish off the minimization
-    @time results = minimizeyangmills!(L, params, defaultSchedule, stoppingConditionFinal; snapshotFrequency=50, snapshotFile=f)
+    @time results = minimizeyangmills!(L, params, defaultSchedule, stoppingConditionFinal; snapshotFrequency=50, snapshotFile=f, overwriteSnapshots=true)
 
     savelattice!(L, f)
     dumpmetadata!(f, results)

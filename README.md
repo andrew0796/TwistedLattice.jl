@@ -14,6 +14,8 @@ Lattices are stored in [hdf5](https://support.hdfgroup.org/documentation/) files
 
 Minimization is done using cooling or heat bath techniques. See the [examples](https://github.com/andrew0796/TwistedLattice.jl/tree/main/examples) and documentation therein for more details to get a sense of how to run things.
 
+The [wiki](https://github.com/andrew0796/TwistedLattice.jl/wiki) has more detailed documentation.
+
 ## Acknowledgements
 Implementations of cooling, overrelaxation, and heat bath borrowed from https://github.com/claudio-bonati/yang-mills/blob/master/lib/sun_upd.c
 Code structure heavily influenced by https://github.com/emilyzinnia/ClassicalSpinMC.jl/tree/main
